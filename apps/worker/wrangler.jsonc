@@ -1,0 +1,18 @@
+{
+	  "$schema": "../../node_modules/wrangler/config-schema.json",
+    "name": "harry-potter-sorting-hat",
+    "logpush": true,
+    "workers_dev": false,
+    "main": "src/index.ts",
+    "compatibility_date": "2025-03-13",
+    "account_id": "ce9999d7d59fce98a0bc0e7911cb6e1f",
+    "observability": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "vars": {
+        "AI_GATEWAY": "sorting-hat",
+        "DATADOG_ENV": "development",
+        "DATADOG_HOST": "localhost:88"
+    }
+  }

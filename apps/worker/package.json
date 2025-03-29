@@ -1,0 +1,21 @@
+{
+  "name": "pm-empower-worker",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "setup": "npm install",
+    "check": "tsc --noEmit",
+    "dev": "wrangler dev --env dev --inspector-port 0 --test-scheduled",
+    "publish": "wrangler publish --env prod"
+  },
+  "author": "author",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250313.0"
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.1.1",
+    "@cfworker/jwt": "^4.0.4",
+    "hono": "^4.6.19"
+  }
+}

@@ -1,0 +1,20 @@
+{
+    "name": "harry-potter-sorting-hat",
+    "version": "1.0.0",
+    "description": "Harry Potter Sorting Hat",
+    "main": "index.js",
+    "license": "ISC",
+    "devDependencies": {
+        "@biomejs/biome": "1.9.4",
+        "turbo": "^2.4.0",
+        "typescript": "5.8.2",
+        "wrangler": "^4.0.0"
+    },
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "packageManager": "npm@10.2.4",
+    "workspaces": [
+        "apps/*"
+    ]
+}

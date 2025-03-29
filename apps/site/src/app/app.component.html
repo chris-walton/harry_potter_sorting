@@ -1,0 +1,29 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>Harry Potter Sorting Hat</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-6">
+      <h2>Party Guests</h2>
+      <ul class="list-group">
+        @for (guest of partyGuests; track guest) {
+          <li class="list-group-item">{{ guest }}</li>
+        }
+      </ul>
+    </div>
+    <div class="col-5">
+      @for (house of houses; track house.name) {
+        <div class="card mb-2" [style.background-color]="house.primary">
+          <div class="card-title px-2" [style.color]="house.font">
+            <h2>{{ house.name }}</h2>
+          </div>
+          <div class="card-body" [style.background-color]="house.secondary">
+            <img src="{{ house.image }}" alt="{{ house.name }}" width="100" />
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

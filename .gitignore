@@ -1,0 +1,6 @@
+**/_playground
+**/node_modules
+**/.wrangler
+
+**/*.vars
+**/.DS_Store
