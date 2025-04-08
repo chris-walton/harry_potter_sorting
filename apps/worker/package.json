@@ -1,11 +1,11 @@
 {
-  "name": "pm-empower-worker",
+  "name": "worker",
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
     "setup": "npm install",
     "check": "tsc --noEmit",
-    "dev": "wrangler dev --env dev --inspector-port 0 --test-scheduled",
+    "dev": "wrangler dev --inspector-port 0 --test-scheduled",
     "publish": "wrangler publish --env prod"
   },
   "author": "author",

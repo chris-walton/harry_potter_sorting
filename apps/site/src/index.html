@@ -1,13 +1,111 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Site</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Site</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <script>
+      var locationHost = window.location.host;
+      var environment = locationHost.indexOf("localhost") > -1
+        ? "development"
+        : locationHost.indexOf("test") > -1
+        ? "test"
+        : "production";
+
+      (function (h, o, u, n, d) {
+        h = h[d] = h[d] || {
+          q: [],
+          onReady: function (c) {
+            h.q.push(c);
+          },
+        };
+        d = o.createElement(u);
+        d.async = 1;
+        d.src = n;
+        n = o.getElementsByTagName(u)[0];
+        n.parentNode.insertBefore(d, n);
+      })(
+        window,
+        document,
+        "script",
+        "https://www.datadoghq-browser-agent.com/us5/v5/datadog-logs.js",
+        "DD_LOGS",
+      );
+      window.DD_LOGS.onReady(function () {
+        window.DD_LOGS.init({
+          clientToken: "pubd0e9b67a9b76d45b8156a8ce603286d7",
+          site: "us5.datadoghq.com",
+          service: "harry-potter-sorting-hat-site",
+          env: environment,
+          forwardErrorsToLogs: false,
+          sessionSampleRate: 100,
+          beforeSend: (log) => {
+            //
+            //  Don't send dev server errors
+            //
+            if ((log.message ?? "").indexOf("[webpack-dev-server]") > -1) {
+              return false;
+            }
+            return true;
+          },
+        });
+        window.DD_LOGS.logger.setContext({
+          app: "harry-potter-sorting-hat",
+          host: window.location.host,
+        });
+      });
+    </script>
+    <script>
+      (function (h, o, u, n, d) {
+        h = h[d] = h[d] || {
+          q: [],
+          onReady: function (c) {
+            h.q.push(c);
+          },
+        };
+        d = o.createElement(u);
+        d.async = 1;
+        d.src = n;
+        n = o.getElementsByTagName(u)[0];
+        n.parentNode.insertBefore(d, n);
+      })(
+        window,
+        document,
+        "script",
+        "https://www.datadoghq-browser-agent.com/us5/v5/datadog-rum.js",
+        "DD_RUM",
+      );
+      window.DD_RUM.onReady(function () {
+        window.DD_RUM.init({
+          clientToken: "pub4836b33b585d8355b1541625cecdcf5b",
+          applicationId: "efa2e736-603b-4e4a-93f6-ee893b7a557b",
+          site: "us5.datadoghq.com",
+          service: "harry-potter-sorting-hat",
+          env: environment,
+          // Specify a version number to identify the deployed version of your application in Datadog
+          // version: '1.0.0',
+          sessionSampleRate: 100,
+          sessionReplaySampleRate: 100,
+          trackUserInteractions: true,
+          trackResources: true,
+          trackLongTasks: true,
+          defaultPrivacyLevel: "mask-user-input",
+        });
+      });
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"
+      integrity="sha512-jnSuA4Ss2PkkikSOLtYs8BlYIeeIK1h99ty4YfvRPAlzr377vr3CXDb7sb7eEEBYjDtcYj+AjBH3FLv5uSJuXg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
 </html>

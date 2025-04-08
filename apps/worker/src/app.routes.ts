@@ -1,43 +1,42 @@
 import { Hono } from "hono";
-
+import { cors } from 'hono/cors';
+import type { Variables } from "./config";
+import { AudioService, ElevenLabsService } from "./services";
 
 const app = new Hono<{ Bindings: CfEnv; Variables: Variables }>();
+
 app.use("*", async (ctx, next) => {
-  const ai = new AiServices(ctx.env);
-  const fin = new FinancialServices(ctx.env);
-  const data = new DataServices(ctx.env, fin, ctx.env.KV_DATA);
+  const elevenLabs = new ElevenLabsService(ctx.env);
+  const audio = new AudioService(elevenLabs, ctx.env.KV_DATA);
 
-  const refresher = new RefresherService(
-    data,
-    fin,
-    ctx.env.BULK_SAVE_QUEUE,
-    ctx.env.KV_DATA
-  );
-
-  ctx.set("financials", fin);
-  ctx.set("data", data);
-  ctx.set("refresher", refresher);
-  ctx.set("ai", ai);
+  ctx.set("elevenLabs", elevenLabs);
+  ctx.set("audio", audio);
   await next();
 });
+
+app.use('*', (c, n) => cors({
+  origin: 'http://localhost:4200',
+  allowHeaders: ['authorization', 'content-type', 'force-refresh', 'x-filename'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+})(c, n));
+
 app.options("api/*", (c) => c.text(""));
-//app.get("api/:ticker/price", FinService.getPriceAsync);
-app.get("api/:ticker/earnings/next", Http.earnings.getNextDateAsync);
-app.get("api/company/:ticker/profile", Http.company.getProfileAsync);
-app.get("api/company/:ticker/summary/:date", Http.tradingDaySummary.getAsync);
-app.post("api/summarize", Http.summarize.startAsync);
-app.get("api/summarize/:instanceId", Http.summarize.checkAsync);
-app.get("api/summarize/:instanceId/audio", Http.summarize.getAudioAsync);
+app.get("api/text/:text", async (ctx) => {
+  const text = ctx.req.param('text');
+  const audio = await ctx.var.audio.getAudio(text);
 
-app.post("api/ai/summary", async (ctx) =>
-  ctx.json(await ctx.var.ai.perplexity.getSummary((await ctx.req.json()).url))
-);
-
-app.get("api/test", async (ctx) => {
-  await ctx.var.refresher.startAsync();
-
-  return ctx.json({ success: true });
+  console.log(audio.byteLength);
+  return ctx.body(audio, {
+    headers: { "Content-Type": "audio/mpeg" },
+  });
 });
-app.get("*", (ctx) => ctx.text("Hello World"));
+
+app.post("api/verify", async (ctx) => {
+  const texts = await ctx.req.json();
+
+  await ctx.var.audio.verifyAll(texts);
+
+  return ctx.newResponse(null, 204);
+});
 
 export const APP_ROUTES = app;
