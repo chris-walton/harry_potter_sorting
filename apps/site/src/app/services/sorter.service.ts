@@ -1,9 +1,8 @@
 import { inject, Injectable } from "@angular/core";
-import { CATEGORIES, DONT_COMBINE, HOUSES, LOLA } from "../data";
+import { BREAKS, CATEGORIES, DONT_COMBINE, HOUSES, LOLA } from "../data";
 import { House } from "../view-model";
 import type { Assignment, Person, Slot } from "../models";
 import { AiDataService } from "./ai.data-service";
-import { forkJoin, map, type Observable } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
 export class SorterService {
@@ -62,7 +61,7 @@ export class SorterService {
                 houseIndex = this.getRandomIndex(housesWithEmptySlots.length);
             }
 
-            slot.guest = person;
+            slot.guest = person.name;
 
             house.slots.set(slots);
 
@@ -93,7 +92,7 @@ export class SorterService {
             //
             //  Move one guest from houseWithMultipleLastCats to houseWithZeroLastCats
             //
-            houseWithZeroLastCats.slots.update(x => [...x, { house: houseWithZeroLastCats.name, category: lastCat.id, guest: null }]);
+            houseWithZeroLastCats.slots.update(x => [...x, { id: crypto.randomUUID(), house: houseWithZeroLastCats.name, category: lastCat.id, guest: null }]);
             houseWithMultipleLastCats.slots.update(x => {
                 const slots: Slot[] = [];
 
@@ -105,6 +104,24 @@ export class SorterService {
             });
         }
     }
+
+    createPrompts(assignments: Assignment[]): void {
+        let previousIndex = -1;
+
+        for (const assignment of assignments) {
+            let index = this.getRandomIndex(BREAKS.length);
+
+            while (index === previousIndex) index = this.getRandomIndex(BREAKS.length);
+
+            const name = this.nameChanges(assignment.guest);
+            const prompt = BREAKS[this.getRandomIndex(BREAKS.length)];
+
+            assignment.prompt = `"${name}" <break time="1.5s" /> "${prompt}" <break time="1.0s" /> "${assignment.house}!"`;
+
+            previousIndex = index;
+        }
+    }
+
 
     private getGuestList(guests: Person[]): Person[] {
         const lola = guests.find(x => x.name === LOLA.name);
@@ -133,7 +150,7 @@ export class SorterService {
 
         for (const slot of slots) {
             if (slot.guest == null) continue;
-            if (dontCombine.includes(slot.guest.name)) {
+            if (dontCombine.includes(slot.guest)) {
                 return false;
             }
         }
@@ -148,6 +165,13 @@ export class SorterService {
         return Math.floor(Math.random() * arraySize);
     }
 
+    arrangeSlots(slots: Slot[]): Slot[] {
+        const assigned = slots.filter(x => x.assignmentNumber != null).sort((a, b) => (a.assignmentNumber ?? 0) - (b.assignmentNumber ?? 0));
+        const unassigned = slots.filter(x => x.assignmentNumber == null);
+
+        return [...assigned, ...unassigned];
+    }
+
     private createSlotsPerCategory(houses: House[], guests: Person[]): Slot[] {
         const slots: Slot[] = [];
 
@@ -157,7 +181,7 @@ export class SorterService {
 
             if (!guest) break;
 
-            const slot: Slot = { house: house.name, category: guest.category, guest: null };
+            const slot: Slot = { id: crypto.randomUUID(), house: house.name, category: guest.category, guest: null };
 
             slots.push(slot);
             house.slots.update(x => [...x, slot]);
@@ -167,5 +191,13 @@ export class SorterService {
 
     private getHouse(houses: House[]): House {
         return houses.sort((a, b) => a.score() - b.score())[0];
+    }
+
+    private nameChanges(name: string): string {
+        if (name === 'Ibra') return 'Eebra';
+        if (name === 'Nissa') return 'Neesa';
+        if (name === 'Desi') return "Dezi";
+
+        return name;
     }
 }

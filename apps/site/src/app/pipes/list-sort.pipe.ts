@@ -7,15 +7,9 @@ import type { Slot } from "../models";
 })
 export class ListSortPipe {
     transform(value: Slot[]): Slot[] {
-        return value.sort((a, b) => {
-            if (a.guest == null && b.guest == null) return 0;
-            if (a.guest == null) return 1;
-            if (b.guest == null) return -1;
+        const assigned = value.filter(x => x.assignmentNumber != null).sort((a, b) => (a.assignmentNumber ?? 0) - (b.assignmentNumber ?? 0));
+        const unassigned = value.filter(x => x.assignmentNumber == null);
 
-            const a2 = a.guest.category === 'leader' ? 0 : a.guest.category === 'middle' ? 1 : 2;
-            const b2 = b.guest.category === 'leader' ? 0 : b.guest.category === 'middle' ? 1 : 2;
-
-            return a2 - b2;
-        });
+        return [...assigned, ...unassigned];
     }
 }

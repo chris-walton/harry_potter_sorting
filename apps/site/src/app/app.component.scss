@@ -1,0 +1,15 @@
+.houses-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .houses-grid .card {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .houses-grid .card-body {
+    flex: 1;
+  } 

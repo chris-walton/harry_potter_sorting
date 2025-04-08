@@ -1,7 +1,7 @@
-import type { Person } from "./person.model";
-
 export interface Slot {
+    id: string;
     house: string;
     category: string;
-    guest: Person | null;
+    guest: string | null;
+    assignmentNumber?: number;
 }

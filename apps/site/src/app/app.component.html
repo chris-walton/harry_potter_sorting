@@ -5,109 +5,87 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-4">
-      <div class="card border mb-5">
-        <div class="card-header">
-          <h2>Current</h2>
-        </div>
-        @if (started()) {
-          <div class="card-body">
-            <div class="d-flex flex-row">
-              <div class="flex-fill">
-                <button
-                  class="btn btn-sm btn-outline me-3"
-                  (click)="playName()"
-                >
-                  <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                {{ current()?.guest }}
-              </div>
-              <div>
-                <button
-                  class="btn btn-sm btn-secondary me-3"
-                  (click)="playName()"
-                >
-                  <i class="fa-solid fa-play"></i>
-                </button>
+    @if (!done()) {
+      <div class="col-4">
+        <div class="card border mb-5">
+          <div class="card-header">
+            <h2>Current</h2>
+          </div>
+          @if (started()) {
+            <div class="card-body">
+              <div class="d-flex flex-row">
+                <div class="flex-fill">
+                  {{ current()?.guest }}
+                </div>
+                <div>
+                  <button
+                    class="btn btn-sm btn-secondary me-3"
+                    (click)="playAssignment()"
+                  >
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        } @else {
-          <div class="card-body text-center">
-            @if (ready()) {
-              <button class="btn btn-primary" (click)="start()">Start</button>
-            } @else {
-              <span class="text-muted">
-                Loading...
-              </span>
-            }
-          </div>
-        }
-      </div>
-      <div class="card border">
-        <div class="card-header">
-          <h2>Next</h2>
-        </div>
-        <div class="card-body">
-          <ol>
-            @for (assignment of assignments(); track assignment.guest) {
-              @if (!started() || assignment.guest !== current()?.guest) {
-                <li>
-                  {{ assignment.guest }}
-                </li>
+          } @else {
+            <div class="card-body text-center">
+              @if (ready()) {
+                <button class="btn btn-primary" (click)="start()">Start</button>
+              } @else {
+                <span class="text-muted">
+                  Loading...
+                </span>
               }
-            }
-          </ol>
-        </div>
-      </div>
-    </div>
-    <div class="col-8">
-      <div class="container">
-        <div class="row">
-          @for (house of houses(); track house.name) {
-            <div class="col-6">
-              <div
-                class="card mb-2"
-                style="min-height: 300px"
-                [style.background-color]="house.primary"
-              >
-                <div class="card-title px-2 pt-2" [style.color]="house.font">
-                  <h3>{{ house.name }}</h3>
-                </div>
-                <div
-                  class="card-body"
-                  [style.background-color]="house.secondary"
-                >
-                  <div class="d-flex flex-row">
-                    <div class="me-4">
-                      <img [src]="house.image" [alt]="house.name" width="100" />
-                    </div>
-                    <div class="flex-grow-1 pt-2">
-                      <ol>
-                        @for (slot of house.slots() | listSort; track $index) {
-                          <li>
-                            @if (slot.guest) {
-                              {{ slot.guest | personName }}
-                            } @else {
-                              <span class="text-muted">
-                                {{ slot.category }}
-                              </span>
-                            }
-                          </li>
-                        }
-                      </ol>
-                      <!--
-                      <p>Leaders: {{ getLength(house.name, "leader") }}</p>
-                      <p>Middles: {{ getLength(house.name, "middle") }}</p>
-                      <p>Bunnies: {{ getLength(house.name, "bunny") }}</p>
-                      -->
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           }
         </div>
+        <div class="card border">
+          <div class="card-header">
+            <h2>Next</h2>
+          </div>
+          <div class="card-body">
+            <ol>
+              @for (assignment of assignments(); track assignment.guest) {
+                @if (!started() || assignment.guest !== current()?.guest) {
+                  <li>
+                    {{ assignment.guest }}
+                  </li>
+                }
+              }
+            </ol>
+          </div>
+        </div>
+      </div>
+    }
+    <div class="col-8">
+      <div class="houses-grid">
+        @for (house of houses(); track house.name) {
+          <div
+            class="card mb-2"
+            [style.background-color]="house.primary"
+          >
+            <div class="card-title px-2 pt-2" [style.color]="house.font">
+              <h3>{{ house.name }}</h3>
+            </div>
+            <div
+              class="card-body"
+              [style.background-color]="house.secondary"
+            >
+              <div class="d-flex flex-row">
+                <div class="me-4">
+                  <img [src]="house.image" [alt]="house.name" width="100" />
+                </div>
+                <div class="flex-grow-1 pt-2">
+                  <ol>
+                    @for (slot of house.slots(); track slot.id) {
+                      <li>{{ slot.guest }}</li>
+                    }
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
   </div>

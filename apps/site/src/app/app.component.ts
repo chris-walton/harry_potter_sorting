@@ -3,7 +3,6 @@ import type { OnInit, WritableSignal } from '@angular/core';
 import { GUESTS, CATEGORIES, LOLA } from './data';
 import type { Assignment, Person, Slot } from './models';
 import { ListSortPipe } from './pipes/list-sort.pipe';
-import { PersonNamePipe } from './pipes/person-name.pipe';
 import { AiDataService, SorterService, } from './services';
 import type { House } from './view-model';
 
@@ -11,11 +10,12 @@ import type { House } from './view-model';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  imports: [ListSortPipe, PersonNamePipe],
+  imports: [ListSortPipe],
 })
 export class AppComponent implements OnInit {
   private readonly sorter = inject(SorterService);
   private readonly aiDataService = inject(AiDataService);
+  private assignmentNumber = 1;
 
   private readonly partyGuests: Person[] = [
     { name: LOLA.name, category: LOLA.category, order: CATEGORIES.find(c => c.id === LOLA.category)?.score ?? 0 },
@@ -29,7 +29,7 @@ export class AppComponent implements OnInit {
   readonly started = signal(false);
   readonly assignments = signal<Assignment[]>([]);
   readonly current = computed(() => this.started() ? this.assignments()[0] : null);
-  readonly done = computed(() => this.assignments().length === 0);
+  readonly done = signal(false);
   readonly audioUrl = signal('');
 
   ngOnInit(): void {
@@ -46,6 +46,17 @@ export class AppComponent implements OnInit {
     this.slots.set(slots);
 
     this.assign();
+
+    // Add keyboard event listener
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') {
+        this.continue();
+      } else if (event.key === ' ') {
+        this.playAssignment();
+      } else if (event.key.toLowerCase() === 's') {
+        this.start();
+      }
+    });
   }
 
   getLength(house: string, category: string): number {
@@ -54,7 +65,6 @@ export class AppComponent implements OnInit {
 
   start(): void {
     this.started.set(true);
-    this.playName();
   }
 
   async assign(): Promise<void> {
@@ -65,26 +75,20 @@ export class AppComponent implements OnInit {
       assignments = this.sorter.getAssignmentList(this.partyGuests, this.houses());
     }
 
+    this.sorter.createPrompts(assignments);
+
     this.assignments.set(assignments);
 
-    this.aiDataService.verifyAsync(assignments.map(x => x.guest)).subscribe();
+    //this.aiDataService.verifyAsync(assignments.map(x => x.prompt ?? '')).subscribe();
 
     this.ready.set(true);
   }
 
-  playName(): void {
-    const assignment = this.current();
-
-    if (!assignment) return;
-
-    this.playAudio(assignment.guest);
-  }
-
-  next(): void {
+  playAssignment(): void {
     const houses = this.houses();
     const assignment = this.current();
 
-    if (!assignment) return;
+    if (!assignment || assignment.assigned || !assignment.prompt) return;
 
     const house = houses.find(x => x.name === assignment.house);
     const person = this.partyGuests.find(x => x.name === assignment.guest);
@@ -98,18 +102,23 @@ export class AppComponent implements OnInit {
       console.log(house.slots());
       return;
     }
-    const transcript = `${person.name}... hmmmm... ${house.name}!`;
+    this.playAudio(assignment.prompt, () => {
+      slot.guest = person.name;
+      slot.assignmentNumber = this.assignmentNumber++;
+      this.assignments.update(x => {
+        x[0].assigned = true;
 
-    //this.aiDataService.getAudioAsync(transcript).subscribe(x => {
-    if (!assignment.nameAudio) return;
-    console.log('PLAYING', assignment.nameAudio);
-    //const audio = new Audio(URL.createObjectURL(assignment.nameAudio));
-    //audio.play();
+        return [...x];
+      });
 
-    slot.guest = person;
+      house.slots.set(this.sorter.arrangeSlots(house.slots()));
+    });
+  }
 
+  continue(): void {
+    const current = this.current();
 
-    house.slots.set(house.slots());
+    if (!current || !current.assigned) return;
 
     this.assignments.update(x => {
       x.splice(0, 1);
@@ -118,14 +127,19 @@ export class AppComponent implements OnInit {
     });
   }
 
-  private playAudio(text: string): void {
+  private playAudio(text: string, done?: () => void): void {
     const text2 = encodeURIComponent(text);
     const audio = new Audio(`http://localhost:8787/api/text/${text2}`);
 
     audio.oncanplaythrough = () => {
-      audio.play().catch(err => {
-        console.error('Error playing audio:', err.message);
-      });
+      audio.play()
+        .catch(err => {
+          console.error('Error playing audio:', err.message);
+        });
+    };
+
+    audio.onended = () => {
+      done?.();
     };
 
     audio.onerror = (err) => {
