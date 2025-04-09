@@ -2,7 +2,6 @@ import { Component, computed, inject, signal, } from '@angular/core';
 import type { OnInit, WritableSignal } from '@angular/core';
 import { GUESTS, CATEGORIES, LOLA } from './data';
 import type { Assignment, Person, Slot } from './models';
-import { ListSortPipe } from './pipes/list-sort.pipe';
 import { AiDataService, SorterService, } from './services';
 import type { House } from './view-model';
 
@@ -10,7 +9,6 @@ import type { House } from './view-model';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  imports: [ListSortPipe],
 })
 export class AppComponent implements OnInit {
   private readonly sorter = inject(SorterService);
@@ -53,9 +51,32 @@ export class AppComponent implements OnInit {
         this.continue();
       } else if (event.key === ' ') {
         this.playAssignment();
+        event.preventDefault();
+        event.stopPropagation();
       } else if (event.key.toLowerCase() === 's') {
         this.start();
       }
+    });
+  }
+
+  moveToNext(name: string): void {
+    this.assignments.update(x => {
+      //
+      //  If the top has been assigned, remove it.
+      //
+      if (x[0].assigned) {
+        x.splice(0, 1);
+      }
+
+      const index = x.findIndex(y => y.guest === name);
+
+      if (index === -1) return x;
+
+      const assignment = x[index];
+
+      x.splice(index, 1);
+
+      return [assignment, ...x];
     });
   }
 

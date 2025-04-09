@@ -48,7 +48,12 @@
               @for (assignment of assignments(); track assignment.guest) {
                 @if (!started() || assignment.guest !== current()?.guest) {
                   <li>
-                    {{ assignment.guest }}
+                    {{ assignment.guest }} &nbsp;
+                    <i
+                      class="fa-solid fa-2xs fa-arrow-right"
+                      style="cursor: pointer"
+                      (click)="moveToNext(assignment.guest)"
+                    ></i>
                   </li>
                 }
               }

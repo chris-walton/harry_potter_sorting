@@ -24,6 +24,7 @@
       "AI_GATEWAY": "sorting-hat",
       "DATADOG_ENV": "development",
       "DATADOG_HOST": "localhost:88",
-      "ELEVENLABS_VOICE": "jvcMcno3QtjOzGtfpjoI"
+      "ELEVENLABS_VOICE": "jvcMcno3QtjOzGtfpjoI",
+      "ELEVENLABS_VOICE_OLD": "Tw2LVqLUUWkxqrCfFOpw"
     }
   }
